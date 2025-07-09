@@ -1,4 +1,5 @@
 from typing import Callable
+from .zcb import traverse_to_zcb_price
 
 def compute_forward_contract_price(zcb_prices: list[list[float]], maturity: int, short_rates: list[list[float]]):
     # compute the risk-neutral expectation of the ratio of zero coupon bond price at time t to value of cash account at time t
@@ -6,12 +7,18 @@ def compute_forward_contract_price(zcb_prices: list[list[float]], maturity: int,
     cash_account_info: list[dict] = []
     
     # traverse each path through the short rate binomial lattice 
-    # and compute the value of Bt (multiplied by risk-neutral probabilities) at each node
-    
+    # and compute the value of Bt (multiplied by risk-neutral probabilities) at each node    
     def add_value(values: dict):
         cash_account_info.append(values)
+
     traverse_and_compute_cash_account_values(maturity=maturity, short_rates=short_rates, add_value=add_value)
-    print(cash_account_info)
+
+    expected_zcb_to_ca_ratio = 0
+    for i in cash_account_info:
+        zt = traverse_to_zcb_price(zcb_prices=zcb_prices, u=i["u"], d=i["d"])
+        expected_zcb_to_ca_ratio += (0.5 ** (maturity)) * (zt / i["value"])
+    print(expected_zcb_to_ca_ratio)
+
 
 def traverse_and_compute_cash_account_values(
     maturity: int,
@@ -33,3 +40,4 @@ def traverse_and_compute_cash_account_values(
     else:
         traverse_and_compute_cash_account_values(maturity, short_rates=short_rates, i=i+1, j=j+1, value=value*(1+short_rate), add_value=add_value, u=u+1, d=d)
         traverse_and_compute_cash_account_values(maturity, short_rates=short_rates, i=i+1, j=j, value=value*(1+short_rate), add_value=add_value, u=u, d=d+1)
+

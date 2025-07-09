@@ -11,3 +11,14 @@ def compute_zero_coupon_bond_prices(maturity: int, short_rates: list[list[float]
                 prices.append(price)
         all_prices[i] = prices
     return all_prices
+
+def traverse_to_zcb_price(zcb_prices: list[list[float]], u: int, d: int) -> float:
+    time = 0
+    state = 0
+    for _ in range(u):
+        time += 1
+        state += 1
+    
+    for _ in range(d):
+        time += 1
+    return zcb_prices[time][state]
