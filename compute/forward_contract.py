@@ -16,8 +16,14 @@ def compute_forward_contract_price(zcb_prices: list[list[float]], maturity: int,
     expected_zcb_to_ca_ratio = 0
     for i in cash_account_info:
         zt = traverse_to_zcb_price(zcb_prices=zcb_prices, u=i["u"], d=i["d"])
+        # the risk-neutral probability is definitely off
         expected_zcb_to_ca_ratio += (0.5 ** (maturity)) * (zt / i["value"])
-    print(expected_zcb_to_ca_ratio)
+
+    expected_one_over_ca = 0
+    for i in cash_account_info:
+        expected_one_over_ca += (0.5 ** (maturity)) * (1 / i["value"])
+    
+    return expected_zcb_to_ca_ratio / expected_one_over_ca
 
 
 def traverse_and_compute_cash_account_values(
